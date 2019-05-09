@@ -1,0 +1,20 @@
+<!-- <span ng-transclude>
+</span> -->
+<div ng-class="isValidClass('{{powerCheckGroupCtrl.checkConfig.registId}}validInput')">
+	<span ng-repeat="checkObj in powerCheckGroupCtrl.checkboxs" ng-switch="powerCheckGroupCtrl.checkType">
+		<span ng-switch-when="checkbox">
+			<input class="magic-checkbox" type="checkbox" name="checkObj"
+		 		id="{{checkObj.checkId_const}}" ng-model="checkObj.isCheck" ng-disabled="disabled" ng-change="checkModelChange(checkObj)" 
+		 		ng-value="checkObj[powerCheckGroupCtrl.checkConfig.valueField]" />
+			<label for="{{checkObj.checkId_const}}" class="ng-binding" ng-bind="checkObj[powerCheckGroupCtrl.checkConfig.textField]"></label>
+		</span>
+		<span ng-switch-when="radio">
+			<input class="magic-radio" type="radio" name="{{powerCheckGroupCtrl.power_radio}}" 
+		 		id="{{checkObj.checkId_const}}" ng-model="compRadio.value" ng-disabled="disabled"  value="{{checkObj[powerCheckGroupCtrl.checkConfig.valueField]}}" />
+			<label for="{{checkObj.checkId_const}}" class="ng-binding" ng-bind="checkObj[powerCheckGroupCtrl.checkConfig.textField]"></label>
+		</span>
+	</span>
+	<input ng-if="powerCheckGroupCtrl.checkConfig.validate" id="{{powerCheckGroupCtrl.checkConfig.registId}}validInput" ng-show="false" type="text" 
+										data-options="required:true,tipPosition:'bottom'"
+			class="easyui-validatebox" ng-model="ngModel"/>
+</div>

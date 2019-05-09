@@ -1,0 +1,59 @@
+<!-- ============================  -->
+<!--       高级查询组件模板    by wwupower 2017-6-22 -->
+<!-- ============================  -->
+<div class="power-query">
+	<table style="width: 100%">
+		<tbody>
+			<tr>
+				<td style="width: 40%">
+					<div class="power-query-box">
+						<input type="text"  ng-model="QueryComp.queryParam.searchTxt" class="power-query-input" 
+						placeholder="{{queryOption.seachInputTips}}" ng-keyup="QueryComp.events.keyup($event)" />
+					</div>
+				</td>
+				<td style="width: 10%">
+					<div class="power-adv-select-btn" ng-class="{'on':advQueryDisplay}" ng-click="QueryComp.events.showSubQuery()">
+						<div class="ellipsis">高级查询</div>
+					</div>
+				</td>
+				<td style="width: 32%">
+					<div class="power-query-tools">
+						<div class="power-btn power-btn-default" ng-click="QueryComp.events.searchBtnClick(QueryComp.queryParam)">
+							<i class="fa fa-search" aria-hidden="true"></i>&nbsp;查询
+						</div>
+						<div class="power-btn power-btn-default" ng-repeat="btn in queryOption.buttons" ng-click="btn.clickFun()">
+							<span class="btn-icon {{btn.iconClass}}" ng-if="btn.iconClass"></span>
+							{{btn.name}}
+						</div>
+					</div>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<div class="power-sub-query" id="subQuery"  style="display: {{queryOption.advQueryDisplay}};">
+		<div ng-repeat="param in queryOption.paramData" ng-switch="param.type">
+			<div class="power-query-item" ng-switch-when="dataArr">
+				<div class="power-query-title">{{param.title}}：</div>
+				<div class="power-query-content">
+					<div class="power-query-param" ng-class="{'on':QueryComp.isCheckSubParam(param,item[param.valueField])}" ng-repeat="item in param.data" ng-click="QueryComp.events.clickSubItem(param,item[param.valueField]);">
+						{{item[param.textField]}}
+					</div>
+				</div>
+			</div>
+			<div class="power-query-item" ng-switch-when="date">
+				<div class="power-query-title">{{param.title}}：</div>
+				<div class="power-query-content">
+					
+					<div class="power-query-param" ng-class="{'on':QueryComp.isCheckSubParam(param,item[param.valueField])}" ng-repeat="item in param.data" ng-click="QueryComp.events.clickSubItem(param,item[param.valueField]);">
+						{{item[param.textField]}}
+					</div>
+					<span>
+							<input type="text" datefmt="{{param.dateFormat}}" ng-change="QueryComp.events.datePickChange(param);" ng-model="QueryComp.queryParam[param.beginFild]" power-date-picker width="180px" class="power-input-date" readonly="" style="width: 180px;">
+							~
+							<input type="text"  datefmt="{{param.dateFormat}}" ng-change="QueryComp.events.datePickChange(param);"  ng-model="QueryComp.queryParam[param.endFild]"  power-date-picker width="180px" class="power-input-date" readonly="" style="width: 180px;">
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div >
