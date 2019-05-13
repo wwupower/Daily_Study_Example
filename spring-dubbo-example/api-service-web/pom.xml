@@ -38,7 +38,7 @@
                 </dependencies>
                 <configuration>
                     <!--这里是main启动类的全路径-->
-                    <mainClass>com.power.dubbo.rpc.order.ServiceWebRpcApplication</mainClass>
+                    <mainClass>com.power.dubbo.rpc.order.ServiceUserWebRpcApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>
