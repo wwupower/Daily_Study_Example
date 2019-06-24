@@ -1,0 +1,14 @@
+spring.application.name=eureka-server
+server.port=8100
+eureka.instance.hostname=eureka-peer1
+eureka.client.service-url.defaultZone=http://eureka-peer1:8100/eureka/,http://eureka-peer2:8200/eureka/,http://eureka-peer3:8300/eureka/
+#实例注册到服务中心显示ip
+eureka.instance.prefer-ip-address=false
+##元数据
+eureka.instance.metadata-map.instanceId=${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+#是否作为eureka客户端注册
+eureka.client.register-with-eureka=true
+#是否检索服务
+eureka.client.fetch-registry=true
+#客户端缓存更新时间
+eureka.client.registry-fetch-interval-seconds=5
