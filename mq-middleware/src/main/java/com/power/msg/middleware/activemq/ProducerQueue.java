@@ -27,7 +27,12 @@ public class ProducerQueue {
         /* 创建会话 */
         Session session = null;
         try {
-            session = connection.createSession(Boolean.TRUE, Session.AUTO_ACKNOWLEDGE);
+            //第一个参数:是否支持事务，如果为true，则会忽略第二个参数，被jms服务器设置为SESSION_TRANSACTED
+	        //第二个参数为false时，paramB的值可为Session.AUTO_ACKNOWLEDGE，Session.CLIENT_ACKNOWLEDGE，DUPS_OK_ACKNOWLEDGE其中一个。
+            //Session.AUTO_ACKNOWLEDGE 为自动确认，客户端发送和接收消息不需要做额外的工作。哪怕是接收端发生异常，也会被当作正常发送成功。
+            //Session.CLIENT_ACKNOWLEDGE 客户端确认,客户端接收到消息后，必须调用javax.jms.Message的acknowledge方法。jms服务器才会当作发送成功，并删除消息。
+            //Session.DUPS_OK_ACKNOWLEDGE 为自动确认，客户端发送和接收消息不需要做额外的工作。哪怕是接收端发生异常，也会被当作正常发送成功。
+            session = connection.createSession(Boolean.FALSE, Session.CLIENT_ACKNOWLEDGE);
         } catch (JMSException e) {
             LOG.error("创建会话出现异常", e);
         }

@@ -55,6 +55,8 @@ public class ConsumerQueue {
         while(handleFlag) {
             try {
                 objectMessage = (ObjectMessage)consumer.receive();
+                //反馈给服务端已经接收到数据，并删除数据
+                objectMessage.acknowledge();
                 handleMessage(objectMessage);
             } catch (JMSException e) {
                 LOG.error("接收消息出现异常", e);

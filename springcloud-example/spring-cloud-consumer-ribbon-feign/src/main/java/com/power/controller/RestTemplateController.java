@@ -22,7 +22,7 @@ public class RestTemplateController {
 
     @RequestMapping(value = "/hello2/{name}", method = RequestMethod.GET)
     public String service1(@PathVariable("name") String name) {
-        return restTemplate().getForObject("http://localhost:9000/hello", String.class);
+        return restTemplate().getForObject("http://spring-cloud-producer:9000/hello?name="+name, String.class);
     }
 
 
