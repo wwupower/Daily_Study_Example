@@ -1,5 +1,6 @@
 package com.power.controller;
 
+import com.power.vo.UserVO;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +23,12 @@ public class RestTemplateController {
 
     @RequestMapping(value = "/hello2/{name}", method = RequestMethod.GET)
     public String service1(@PathVariable("name") String name) {
-        return restTemplate().getForObject("http://spring-cloud-producer:9000/hello?name="+name, String.class);
+        return restTemplate().getForObject("http://localhost:9000/hello?name="+name, String.class);
+    }
+
+    @RequestMapping("/getUserById2/{id}")
+    public UserVO getUserById2(@PathVariable("id") String id) {
+        return restTemplate().getForObject("http://localhost:9000/getUserById/"+id, UserVO.class);
     }
 
 
