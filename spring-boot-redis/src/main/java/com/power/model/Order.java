@@ -16,7 +16,7 @@ public class Order {
     private Long id;
 
     @Column
-    private String orderNo;
+    private Long orderNo;
 
 
     public Order() {
@@ -31,11 +31,11 @@ public class Order {
         return this;
     }
 
-    public String getOrderNo() {
+    public Long getOrderNo() {
         return orderNo;
     }
 
-    public Order setOrderNo(String orderNo) {
+    public Order setOrderNo(Long orderNo) {
         this.orderNo = orderNo;
         return this;
     }

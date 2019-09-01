@@ -5,7 +5,6 @@
 target/
 *.iml
 *.log
-**/test/
 **/classes/
 **/DataFile
 **/dtbd/*.zip
