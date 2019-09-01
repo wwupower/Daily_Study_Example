@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 public class TestRedis {
 
     Logger logger = LoggerFactory.getLogger(TestRedis.class);
-    private final static int threadCount = 30;
+    private final static int threadCount = 1;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -43,6 +43,14 @@ public class TestRedis {
     private RedisLock redisLock;
 
     private volatile int reqCount = 0;
+
+    @Test
+    public void test1() throws Exception {
+        for(int i=1;i<10;i++){
+            testIdInr();
+            Thread.sleep(2000);
+        }
+    }
 
     @Test
     public void testIdInr() throws Exception {
@@ -68,78 +76,104 @@ public class TestRedis {
     }
 
 
-    public Long getId2() {
+    public Long getId2() throws Exception {
         String id_KEY = "wwupower-test:@30PL_20190901";
-        if(reqCount++ == 10){
-            redisTemplate.delete(id_KEY);
-        }
-        if(reqCount++ == 20){
+        reqCount++;
+        if (reqCount == 10) {
             redisTemplate.delete(id_KEY);
         }
         ValueOperations<String, Long> operations = redisTemplate.opsForValue();
         if (redisTemplate.hasKey(id_KEY)) {
-            return redisTemplate.opsForValue().increment(id_KEY);
+            if (reqCount == 20) {
+                redisTemplate.delete(id_KEY);
+            }
+            Long id = setExistIncr(Arrays.asList(id_KEY), 1);
+            if (id > 0) {
+                return id;
+            }
         }
         //首次初始化
-        synchronized (this){
-            if(redisTemplate.hasKey(id_KEY)){
+        synchronized (this) {
+            if (redisTemplate.hasKey(id_KEY)) {
                 return redisTemplate.opsForValue().increment(id_KEY);
             }
             logger.info(">>查询数据库最大值");
             Long idMax4db = orderRepository.getMaxId();
             if (null == idMax4db) {
-                setNxEX(Arrays.asList(id_KEY),0L,24*60*60);
-                return operations.increment(id_KEY);
+                /*setNxEX(id_KEY, 0L, 24 * 60 * 60L);
+                return operations.increment(id_KEY);*/
+                Long id = setNxEXIncr(id_KEY, 0L, 24 * 60 * 60L,1);
+                if(id == 0){
+                    throw new Exception("订单创建失败----");
+                }
+                return id;
             }
-            setNxEX(Arrays.asList(id_KEY),idMax4db,24*60*60);
-            return redisTemplate.opsForValue().increment(id_KEY);
+            Long id = setNxEXIncr(id_KEY, idMax4db, 24 * 60 * 60L,1);
+            if(id == 0){
+                throw new Exception("订单创建失败----");
+            }
+            return id;
+          /*  setNxEX(id_KEY, idMax4db, 24 * 60 * 60L);
+            return operations.increment(id_KEY);*/
         }
     }
 
     public Long getId() {
         String id_KEY = "wwupower-test:@30PL_20190901";
+        reqCount++;
+        if (reqCount == 10) {
+            redisTemplate.delete(id_KEY);
+        }
         ValueOperations<String, Long> operations = redisTemplate.opsForValue();
-        Object id = operations.get(id_KEY);
-        if (id != null) {
-            id = operations.get(id_KEY);
-            if(id != null){
-                return redisTemplate.opsForValue().increment(id_KEY);
+        if (redisTemplate.hasKey(id_KEY)) {
+            if (reqCount == 20) {
+                redisTemplate.delete(id_KEY);
+            }
+            Long id = setExistIncr(Arrays.asList(id_KEY), 1);
+            if (id > 0) {
+                return id;
             }
         }
         //首次初始化
-        boolean lock = redisLock.lock(id_KEY+"_lock",Thread.currentThread().getId()+"");
-        if(lock){
-            Long idMax4db = orderRepository.getMaxId();
-            if (null == idMax4db) {
-                setNxEX(Arrays.asList(id_KEY),0L,24*60*60);
-                return redisTemplate.opsForValue().increment(id_KEY);
-            }
-            setNxEX(Arrays.asList(id_KEY),idMax4db,24*60*60);
-            redisLock.unlock(id_KEY+"_lock",Thread.currentThread().getId()+"");
-            return redisTemplate.opsForValue().increment(id_KEY);
+        boolean lock = redisLock.lock(id_KEY + "_lock", Thread.currentThread().getId() + "");
+        if (lock) {
         }
         return getId();
 
     }
 
 
-    public String idFormat(Long id,int length){
-        String idFormat = String.format("%0"+length+"d",id);
+    public String idFormat(Long id, int length) {
+        String idFormat = String.format("%0" + length + "d", id);
         return idFormat;
     }
 
-    private String dateFormat(Date date,String format) {
-       SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
-       return simpleDateFormat.format(date);
+    private String dateFormat(Date date, String format) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+        return simpleDateFormat.format(date);
     }
 
     /**
-     *
-     * @param keys
-     * @param values
      * @return
      */
-    public Boolean setNxEX(List<String> keys, Object... values){
+    public Long setNxEXIncr(String key, Long value,Long expire,int incre) {
+        String script = "local result = redis.call('SETNX',KEYS[1],ARGV[1]);" +
+                "if result == 1 then  " +
+                "redis.call('expire',KEYS[1],ARGV[2]);" +
+                "return redis.call('INCRBY',KEYS[1],ARGV[3]);" +
+                "end;" ;
+        DefaultRedisScript<Long> script1 = new DefaultRedisScript<>();
+        script1.setScriptText(script);
+        script1.setResultType(Long.class);
+        Object result = redisTemplate.execute(script1,Arrays.asList(key), value,expire,incre);
+        return (Long) result;
+
+    }
+
+    /**
+     * @return
+     */
+    public Boolean setNxEX(String key, Long value,Long expire) {
         String script = "local result = redis.call('SETNX',KEYS[1],ARGV[1]);" +
                 "if result == 1 then  " +
                 "redis.call('expire',KEYS[1],ARGV[2]);" +
@@ -149,8 +183,27 @@ public class TestRedis {
         DefaultRedisScript<Boolean> script1 = new DefaultRedisScript<>();
         script1.setScriptText(script);
         script1.setResultType(Boolean.class);
-        Object result = redisTemplate.execute(script1,keys,values);
-        return (Boolean)result;
+        Object result = redisTemplate.execute(script1,Arrays.asList(key), value,expire);
+        return (Boolean) result;
+
+    }
+
+    /**
+     * @param keys
+     * @param values
+     * @return
+     */
+    public Long setExistIncr(List<String> keys, Object... values) {
+        String script = "local result = redis.call('EXISTS',KEYS[1]);" +
+                "if result == 1 then  " +
+                "return redis.call('INCRBY',KEYS[1],ARGV[1]);" +
+                "end; " +
+                "return 0";
+        DefaultRedisScript<Long> script1 = new DefaultRedisScript<>();
+        script1.setScriptText(script);
+        script1.setResultType(Long.class);
+        Object result = redisTemplate.execute(script1, keys, values);
+        return (Long) result;
 
     }
 }

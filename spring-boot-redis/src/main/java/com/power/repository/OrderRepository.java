@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
 
-    @Query("select max(id) from Order")
+    @Query("select max(orderNo) from Order")
     Long getMaxId();
 
 }
